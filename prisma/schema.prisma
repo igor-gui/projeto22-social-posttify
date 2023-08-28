@@ -16,6 +16,7 @@ model Media {
   username     String         @db.VarChar(255)
   Publications Publications[]
   @@map("media")
+  @@unique([title, username])
 }
 
 model Posts {

@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { CreateMediaDTO } from 'src/dtos/media.dto';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
 import { MediaService } from './media.service';
+import { CreateMediaDTO } from './dtos/media.dto';
 
 @Controller('medias')
 export class MediaController {
@@ -8,7 +8,16 @@ export class MediaController {
     }
     @Post()
     async createMedia(@Body() body: CreateMediaDTO) {
-        const { username, title } = await this.mediaService.createMedia(body);
+        const { username, title } = body;
+        if (!username || !title) {
+            throw new HttpException('All fields are Required!', HttpStatus.BAD_REQUEST);
+        }
+        try {
+            return await this.mediaService.createMedia(body);
+        } catch (err) {
+            console.log(err.message)
+            return err.message;
+        }
     }
 
     @Get()
@@ -19,6 +28,21 @@ export class MediaController {
         catch (err) {
             console.log(err)
             return err
+        }
+    }
+
+    @Get(':id')
+    async getMediaById(@Param('id') id: string) {
+        const numberId = Number(id)
+        const media = await this.mediaService.getMediaById(numberId);
+        if (media !== null) {
+
+            return media;
+        }
+        else {
+            throw new HttpException(
+                'Media not found', HttpStatus.NOT_FOUND
+            )
         }
     }
 }
